@@ -13,8 +13,6 @@ import {
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
-import "hardhat/console.sol";
-
 
 contract Flash is GelatoRelayContext, EIP712 {
 
@@ -113,7 +111,6 @@ contract Flash is GelatoRelayContext, EIP712 {
         Signature calldata _signature
     ) external view returns (bool) {
         bool result = _verifySignature(_paymentData, _signature);
-        console.log("verifySignature:", result);
         return result;
     }
 
@@ -122,16 +119,13 @@ contract Flash is GelatoRelayContext, EIP712 {
         Signature calldata _signature
     ) internal view  returns(bool) {
         uint256 userNonce = IERC20Permit(_paymentData.token).nonces(_paymentData.from);
-        console.log("userNonce:", userNonce);
 
         bytes32 paymentStructHash = keccak256(abi.encode(
             PAY_TYPEHASH,
             _paymentData.to,
             userNonce
         ));
-        console.logBytes32(paymentStructHash);
         bytes32 hash = _hashTypedDataV4(paymentStructHash);
-        console.logBytes32(hash);
         address signer = ECDSA.recover(hash, _signature.v, _signature.r, _signature.s);
         bool result = signer == _paymentData.from;
         return(result);

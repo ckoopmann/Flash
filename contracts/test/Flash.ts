@@ -41,11 +41,11 @@ describe("Flash", function () {
 
     async function getTokenPermitSignature(
         token: IERC20Complete,
-        owner: string,
         spender: string,
         value: BigNumberish,
         deadline: BigNumberish
     ) {
+        const owner = await token.signer.getAddress();
         const [nonce, tokenName, tokenVersion] = await Promise.all([
             token.nonces(owner),
             token.name(),
@@ -163,6 +163,47 @@ describe("Flash", function () {
         };
     }
 
+    async function generatePaymentStructs(
+        token: IERC20Complete,
+        amount: BigNumberish,
+        deadline: BigNumberish,
+        receiverAddress: string,
+        flash: Flash
+    ) {
+        const {  permitSignature, permitNonce } =
+            await getTokenPermitSignature(
+                token,
+                flash.address,
+                amount,
+                deadline
+            );
+
+        const paySignature = await generatePaySignature(
+            permitNonce,
+            receiverAddress,
+            token.signer,
+            flash
+        );
+        console.log("paySignature", paySignature);
+
+        const permitData = {
+            deadline,
+            signature: permitSignature,
+        };
+
+        const paymentData = {
+            token: token.address,
+            from: await signer.getAddress(),
+            to: await receiver.getAddress(),
+            amount,
+            permitData,
+        };
+        return {
+            paymentData,
+            paySignature,
+        };
+    }
+
     it("can generate permit signature", async function () {
         const relativeDeadline = 60 * 60;
         const deadline =
@@ -171,7 +212,6 @@ describe("Flash", function () {
         const owner = await signer.getAddress();
         const {permitSignature} = await getTokenPermitSignature(
             usdc,
-            owner,
             flash.address,
             amount,
             deadline
@@ -195,38 +235,35 @@ describe("Flash", function () {
             Math.floor(new Date().getTime() / 1000) + relativeDeadline;
         const amount = 100;
         const owner = await signer.getAddress();
-        const {  permitSignature, permitNonce } =
-            await getTokenPermitSignature(
-                usdc,
-                owner,
-                flash.address,
-                amount,
-                deadline
-            );
 
-        const paySignature = await generatePaySignature(
-            permitNonce,
+        const {paymentData, paySignature} = await generatePaymentStructs(
+            usdc,
+            amount,
+            deadline,
             await receiver.getAddress(),
-            signer,
             flash
         );
-        console.log("paySignature", paySignature);
-
-        const permitData = {
-            deadline,
-            signature: permitSignature,
-        };
-
-        const paymentData = {
-            token: usdc.address,
-            from: owner,
-            to: await receiver.getAddress(),
-            amount,
-            permitData,
-        };
 
         console.log("paymentData", paymentData);
         const result = await flash.callStatic.verifySignature(paymentData, paySignature);
         console.log("result", result);
+    });
+    
+    it("can settle payment", async function () {
+        const relativeDeadline = 60 * 60;
+        const deadline =
+            Math.floor(new Date().getTime() / 1000) + relativeDeadline;
+        const amount = 100;
+
+        const {paymentData, paySignature} = await generatePaymentStructs(
+            usdc,
+            amount,
+            deadline,
+            await receiver.getAddress(),
+            flash
+        );
+
+        console.log("paymentData", paymentData);
+        await flash.payAnyone(paymentData, paySignature);
     });
 });

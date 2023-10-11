@@ -13,16 +13,15 @@ import {
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
+import "hardhat/console.sol";
+
 
 contract Flash is GelatoRelayContext, EIP712 {
 
     using SafeERC20 for IERC20;
 
-    bytes32 private constant _PERMIT_TYPEHASH =
-        keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
-
     bytes32 public constant PAY_TYPEHASH =
-        keccak256("Pay(address receiver,bytes32 permitHash)");
+        keccak256("Pay(address receiver,uint256 permitNonce)");
 
     struct Signature {
         uint8 v;
@@ -49,7 +48,7 @@ contract Flash is GelatoRelayContext, EIP712 {
         Signature calldata _signature
     ) external onlyGelatoRelay {
 
-        _verifySignature(_paymentData, _signature);
+        require(_verifySignature(_paymentData, _signature), "Flash: invalid signature");
 
         IERC20Permit(_paymentData.token).permit(
             _paymentData.from,
@@ -77,28 +76,65 @@ contract Flash is GelatoRelayContext, EIP712 {
 
     }
 
-    function _verifySignature(
+    function payAnyone(
         PaymentData calldata _paymentData,
         Signature calldata _signature
-    ) internal {
-        uint256 userNonce = IERC20Permit(_paymentData.token).nonces(_paymentData.from);
-        bytes32 permitStructHash = keccak256(abi.encode(
-            _PERMIT_TYPEHASH,
+    ) external {
+
+        require(_verifySignature(_paymentData, _signature), "Flash: invalid signature");
+
+        IERC20Permit(_paymentData.token).permit(
             _paymentData.from,
             address(this),
             _paymentData.amount,
-            userNonce,
-            _paymentData.permitData.deadline
-        ));
+            _paymentData.permitData.deadline,
+            _paymentData.permitData.signature.v,
+            _paymentData.permitData.signature.r,
+            _paymentData.permitData.signature.s
+        );
+
+        IERC20(_paymentData.token).safeTransferFrom(
+            _paymentData.from,
+            address(this),
+            _paymentData.amount
+        );
+
+        SafeERC20.safeTransfer(
+            IERC20(_paymentData.token),
+            _paymentData.to,
+            IERC20(_paymentData.token).balanceOf(address(this))
+        );
+
+    }
+
+
+    function verifySignature(
+        PaymentData calldata _paymentData,
+        Signature calldata _signature
+    ) external view returns (bool) {
+        bool result = _verifySignature(_paymentData, _signature);
+        console.log("verifySignature:", result);
+        return result;
+    }
+
+    function _verifySignature(
+        PaymentData calldata _paymentData,
+        Signature calldata _signature
+    ) internal view  returns(bool) {
+        uint256 userNonce = IERC20Permit(_paymentData.token).nonces(_paymentData.from);
+        console.log("userNonce:", userNonce);
 
         bytes32 paymentStructHash = keccak256(abi.encode(
             PAY_TYPEHASH,
             _paymentData.to,
-            permitStructHash
+            userNonce
         ));
+        console.logBytes32(paymentStructHash);
         bytes32 hash = _hashTypedDataV4(paymentStructHash);
+        console.logBytes32(hash);
         address signer = ECDSA.recover(hash, _signature.v, _signature.r, _signature.s);
-        require(signer == _paymentData.from, "Flash: invalid signature");
+        bool result = signer == _paymentData.from;
+        return(result);
     }
 
 }

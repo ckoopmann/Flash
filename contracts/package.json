@@ -9,6 +9,7 @@
     "test": "hardhat test"
   },
   "devDependencies": {
+    "@gelatonetwork/relay-sdk": "^5.5.0",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.9",
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",

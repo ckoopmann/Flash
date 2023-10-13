@@ -8,6 +8,8 @@ import {
     IERC20Complete__factory,
 } from "../typechain-types";
 
+import { setBalance }  from "@nomicfoundation/hardhat-network-helpers";
+
 export async function impersonateAccount(address: string) {
     await network.provider.request({
         method: "hardhat_impersonateAccount",
@@ -170,13 +172,12 @@ describe("Flash", function () {
         receiverAddress: string,
         flash: Flash
     ) {
-        const {  permitSignature, permitNonce } =
-            await getTokenPermitSignature(
-                token,
-                flash.address,
-                amount,
-                deadline
-            );
+        const { permitSignature, permitNonce } = await getTokenPermitSignature(
+            token,
+            flash.address,
+            amount,
+            deadline
+        );
 
         const paySignature = await generatePaySignature(
             permitNonce,
@@ -204,66 +205,232 @@ describe("Flash", function () {
         };
     }
 
-    it("can generate permit signature", async function () {
-        const relativeDeadline = 60 * 60;
-        const deadline =
-            Math.floor(new Date().getTime() / 1000) + relativeDeadline;
-        const amount = 100;
-        const owner = await signer.getAddress();
-        const {permitSignature} = await getTokenPermitSignature(
-            usdc,
-            flash.address,
-            amount,
-            deadline
-        );
-        console.log("signature", permitSignature);
-        await usdc.permit(
-            owner,
-            flash.address,
+    async function generateVerificationCallData(
+        token: IERC20Complete,
+        amount: BigNumberish,
+        deadline: BigNumberish,
+        receiverAddress: string,
+        flash: Flash
+    ) {
+        const { paymentData, paySignature } = await generatePaymentStructs(
+            token,
             amount,
             deadline,
-            permitSignature.v,
-            permitSignature.r,
-            permitSignature.s,
-            { gasLimit: 2_000_000 }
-        );
-    });
-
-    it("can generate pay signature", async function () {
-        const relativeDeadline = 60 * 60;
-        const deadline =
-            Math.floor(new Date().getTime() / 1000) + relativeDeadline;
-        const amount = 100;
-        const owner = await signer.getAddress();
-
-        const {paymentData, paySignature} = await generatePaymentStructs(
-            usdc,
-            amount,
-            deadline,
-            await receiver.getAddress(),
+            receiverAddress,
             flash
         );
 
-        console.log("paymentData", paymentData);
-        const result = await flash.callStatic.verifySignature(paymentData, paySignature);
-        console.log("result", result);
-    });
-    
-    it("can settle payment", async function () {
-        const relativeDeadline = 60 * 60;
-        const deadline =
-            Math.floor(new Date().getTime() / 1000) + relativeDeadline;
-        const amount = 100;
+        const verifyDataCallData = flash.interface.encodeFunctionData(
+            "verifyData",
+            [paymentData, paySignature]
+        );
+        return verifyDataCallData;
+    }
 
-        const {paymentData, paySignature} = await generatePaymentStructs(
-            usdc,
-            amount,
-            deadline,
-            await receiver.getAddress(),
-            flash
+    async function generatePayCallData(
+        verifyCallData: string,
+        tokenAddress: string,
+        amount: BigNumberish,
+        receiver: string,
+        flash: Flash
+    ) {
+        const result = await signer.provider?.call({
+            to: flash.address,
+            data: verifyCallData,
+        });
+        const expectedResult =
+            "0x0000000000000000000000000000000000000000000000000000000000000001";
+        if (result !== expectedResult) {
+            console.log("result", result);
+            throw new Error("verifyData failed");
+        }
+
+        const [paymentData, paySignature] = flash.interface.decodeFunctionData(
+            "verifyData",
+            verifyCallData
         );
 
         console.log("paymentData", paymentData);
-        await flash.payAnyone(paymentData, paySignature);
+        if (paymentData.token !== tokenAddress) {
+            throw new Error("token address mismatch");
+        }
+
+        if (!paymentData.amount.eq(amount)) {
+            throw new Error("amount mismatch");
+        }
+
+        if (paymentData.to !== receiver) {
+            throw new Error("receiver mismatch");
+        }
+
+        const payCallData = flash.interface.encodeFunctionData("pay", [
+            paymentData,
+            paySignature,
+        ]);
+        console.log("payCallData", payCallData);
+        return payCallData;
+    }
+
+    describe("payment", function () {
+        it("can generate permit signature", async function () {
+            const relativeDeadline = 60 * 60;
+            const deadline =
+                Math.floor(new Date().getTime() / 1000) + relativeDeadline;
+            const amount = 100;
+            const owner = await signer.getAddress();
+            const { permitSignature } = await getTokenPermitSignature(
+                usdc,
+                flash.address,
+                amount,
+                deadline
+            );
+            console.log("signature", permitSignature);
+            await usdc.permit(
+                owner,
+                flash.address,
+                amount,
+                deadline,
+                permitSignature.v,
+                permitSignature.r,
+                permitSignature.s,
+                { gasLimit: 2_000_000 }
+            );
+        });
+
+        it("can generate pay signature", async function () {
+            const relativeDeadline = 60 * 60;
+            const deadline =
+                Math.floor(new Date().getTime() / 1000) + relativeDeadline;
+            const amount = 100;
+            const owner = await signer.getAddress();
+
+            const { paymentData, paySignature } = await generatePaymentStructs(
+                usdc,
+                amount,
+                deadline,
+                await receiver.getAddress(),
+                flash
+            );
+
+            console.log("paymentData", paymentData);
+            const result = await flash.callStatic.verifySignature(
+                paymentData,
+                paySignature
+            );
+            console.log("result", result);
+        });
+
+        it("data verifies", async function () {
+            const relativeDeadline = 60 * 60;
+            const deadline =
+                Math.floor(new Date().getTime() / 1000) + relativeDeadline;
+            const amount = 100;
+
+            const verifyCallData = await generateVerificationCallData(
+                usdc,
+                amount,
+                deadline,
+                await receiver.getAddress(),
+                flash
+            );
+            console.log("verifyCallData", verifyCallData);
+
+            const result = await signer.provider?.call({
+                to: flash.address,
+                data: verifyCallData,
+            });
+            console.log("result", result);
+            const expectedResult =
+                "0x0000000000000000000000000000000000000000000000000000000000000001";
+            expect(result).to.equal(expectedResult);
+        });
+
+        it("can generate payment data", async function () {
+            const relativeDeadline = 60 * 60;
+            const deadline =
+                Math.floor(new Date().getTime() / 1000) + relativeDeadline;
+            const amount = 100;
+
+            const verifyCallData = await generateVerificationCallData(
+                usdc,
+                amount,
+                deadline,
+                await receiver.getAddress(),
+                flash
+            );
+            console.log("verifyCallData", verifyCallData);
+
+            const payCallData = await generatePayCallData(
+                verifyCallData,
+                usdc.address,
+                amount,
+                await receiver.getAddress(),
+                flash
+            );
+
+            console.log("payCallData", payCallData);
+        });
+        describe("when contract is paused", function () {
+            it("cannot pay", async function () {
+                const relativeDeadline = 60 * 60;
+                const deadline =
+                    Math.floor(new Date().getTime() / 1000) + relativeDeadline;
+                const amount = 100;
+
+                const verifyCallData = await generateVerificationCallData(
+                    usdc,
+                    amount,
+                    deadline,
+                    await receiver.getAddress(),
+                    flash
+                );
+                console.log("verifyCallData", verifyCallData);
+
+                const payCallData = await generatePayCallData(
+                    verifyCallData,
+                    usdc.address,
+                    amount,
+                    await receiver.getAddress(),
+                    flash
+                );
+
+                await flash.pause();
+
+                console.log("payCallData", payCallData);
+                const relatoRelayAddress ="0xaBcC9b596420A9E9172FD5938620E265a0f9Df92"
+                const relatoRelaySigner = await impersonateAccount(relatoRelayAddress);
+                await setBalance( relatoRelayAddress, ethers.utils.parseEther("100000"));
+                await expect(
+                    relatoRelaySigner.sendTransaction({
+                        to: flash.address,
+                        data: payCallData,
+                        gasLimit: 2_000_000,
+                    })
+                ).to.be.revertedWith("Pausable: paused");
+            });
+        });
+    });
+
+    describe("#pause", function () {
+        it("can pause", async function () {
+            await flash.pause();
+        });
+
+        it("non admin cannot pause", async function () {
+            await expect(flash.connect(receiver).pause()).to.be.revertedWith(
+                "Ownable: caller is not the owner"
+            );
+        });
+    });
+    describe("#unpause", function () {
+        it("can unpause", async function () {
+            await flash.unpause();
+        });
+
+        it("non admin cannot unpause", async function () {
+            await expect(flash.connect(receiver).unpause()).to.be.revertedWith(
+                "Ownable: caller is not the owner"
+            );
+        });
     });
 });

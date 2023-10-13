@@ -12,9 +12,11 @@ import {
 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 
-contract Flash is GelatoRelayContext, EIP712 {
+contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
 
     using SafeERC20 for IERC20;
 
@@ -44,7 +46,7 @@ contract Flash is GelatoRelayContext, EIP712 {
     function pay(
         PaymentData calldata _paymentData,
         Signature calldata _signature
-    ) external onlyGelatoRelay {
+    ) external whenNotPaused onlyGelatoRelay {
 
         require(_verifySignature(_paymentData, _signature), "Flash: invalid signature");
 
@@ -74,7 +76,30 @@ contract Flash is GelatoRelayContext, EIP712 {
 
     }
 
-    function payAnyone(
+    // This function is used to verify the data and revert the transaction
+    // Only call as static call to avoid wasting gas
+    function verifyData(
+        PaymentData calldata _paymentData,
+        Signature calldata _signature
+    ) external whenNotPaused returns (bool) {
+
+        try this.verifyDataReverting(_paymentData, _signature) {
+            revert("Flash: verifyDataReverting did not revert");
+        } catch Error(string memory reason) {
+            // Check that the right error was thrown
+            if (keccak256(abi.encodePacked(reason)) != keccak256(abi.encodePacked("Flash: verification complete"))) {
+                return(false);
+            }
+        } catch {
+           return (false);
+        }
+
+        return(true);
+    }
+
+    // This function is used to verify the data and revert the transaction
+    // This will always revert and is only meant to be called by verifyData
+    function verifyDataReverting(
         PaymentData calldata _paymentData,
         Signature calldata _signature
     ) external {
@@ -103,6 +128,8 @@ contract Flash is GelatoRelayContext, EIP712 {
             IERC20(_paymentData.token).balanceOf(address(this))
         );
 
+        revert("Flash: verification complete");
+
     }
 
 
@@ -113,6 +140,20 @@ contract Flash is GelatoRelayContext, EIP712 {
         bool result = _verifySignature(_paymentData, _signature);
         return result;
     }
+
+    function pause() external onlyOwner whenNotPaused {
+        _pause();
+    }
+
+    function unpause() external onlyOwner whenPaused {
+        _unpause();
+    }
+
+    function transferOwner(address _newOwner) external onlyOwner {
+        _transferOwnership(_newOwner);
+    }
+
+    // ====== INTERNAL FUNCTIONS ======
 
     function _verifySignature(
         PaymentData calldata _paymentData,

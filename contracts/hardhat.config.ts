@@ -13,6 +13,11 @@ const config: HardhatUserConfig = {
             },
             chainId: 100,
         },
+        gnosis: {
+            url: gnosisRPCURL,
+            chainId: 100,
+            accounts: ['0x' + process.env.GNOSIS_PRIVATE_KEY],
+        }
     },
     namedAccounts: {
         deployer: {

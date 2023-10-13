@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
         hardhat: {
             forking: {
                 url: gnosisRPCURL,
-                blockNumber: 30402407,
+                blockNumber: 30432433,
             },
             chainId: 100,
         },
@@ -28,5 +28,4 @@ const config: HardhatUserConfig = {
         apiKey: process.env.GNOSISSCAN_API_KEY ?? "abc",
     },
 };
-
 export default config;

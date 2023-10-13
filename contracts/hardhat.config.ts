@@ -16,13 +16,16 @@ const config: HardhatUserConfig = {
         gnosis: {
             url: gnosisRPCURL,
             chainId: 100,
-            accounts: ['0x' + process.env.GNOSIS_PRIVATE_KEY],
-        }
+            accounts: ["0x" + process.env.GNOSIS_PRIVATE_KEY],
+        },
     },
     namedAccounts: {
         deployer: {
             default: 0,
         },
+    },
+    etherscan: {
+        apiKey: process.env.GNOSISSCAN_API_KEY ?? "abc",
     },
 };
 

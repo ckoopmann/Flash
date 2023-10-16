@@ -2,7 +2,6 @@
 import { useContext, useEffect, useState } from "react";
 import { Web3AuthContext } from "@/context/Web3AuthContext";
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
 import { getGnosisSdk } from '@dethcrypto/eth-sdk-client'
 import { ethers } from "ethers";
 

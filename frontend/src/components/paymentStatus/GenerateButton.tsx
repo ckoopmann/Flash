@@ -1,12 +1,14 @@
 "use client";
 import { ethers } from "ethers";
-import { getPermitSignature, validatePermit } from "../../utils";
+import { generateVerificationCallData, generatePayCallData} from "../../utils";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 import { Web3AuthContext } from "@/context/Web3AuthContext";
 import { Button } from "@/components/ui/button";
 import { FaSpinner } from "react-icons/fa";
 import { getGnosisSdk } from "@dethcrypto/eth-sdk-client";
+
+const RELATIVE_DEADLINE = 60*60;
 
 function GeneratePaymentCodeButton({
     address,
@@ -45,15 +47,9 @@ function GeneratePaymentCodeButton({
         init();
     });
 
-    async function generateSignature() {
+    async function generateCalldata() {
         setProcessing(true);
         const value = ethers.utils.parseUnits(amount, 6);
-        const rpcUrl = "https://rpc.gnosischain.com/";
-        const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-        const blockNumber = await provider.getBlockNumber();
-
-        console.log("blockNumber:", blockNumber);
-
         const signer = web3AuthContext?.ethersSigner;
         console.log("signer:", signer);
         if (!signer) {
@@ -61,18 +57,25 @@ function GeneratePaymentCodeButton({
             return;
         }
 
-        const result = await getPermitSignature(signer, value, 10000);
-        console.log("result:", result);
+        const sdk = getGnosisSdk(signer);
+
+        const deadline = Math.floor(Date.now() / 1000) + RELATIVE_DEADLINE;
+        const verificationCalldata = await generateVerificationCallData(
+            sdk.usdc,
+            value,
+            deadline,
+            address,
+            sdk.flash
+        );
+        console.log("verificationCalldata:", verificationCalldata);
         try {
-            await validatePermit(
-                result.sender,
+            const payCalldata = await generatePayCallData(verificationCalldata,
+                sdk.usdc.address,
                 value,
-                result.deadline ?? 0,
-                result.r,
-                result.s,
-                result.v
+                address, 
+                sdk.flash
             );
-            let qr = `deadline=${result.deadline}&r=${result.r}&s=${result.s}&v=${result.v}&sender=${result.sender}&amount=${amount}&address=${address}&paymentId=${paymentId}`;
+            let qr = `calldata=${payCalldata}&paymentId=${paymentId}`;
             console.log("qr:", qr);
             let targetUrl = `dapp/paymentStatus?${qr}`;
             console.log("targetUrl:", targetUrl);
@@ -107,7 +110,7 @@ function GeneratePaymentCodeButton({
     return (
         <>
             <div>
-                <Button onClick={generateSignature}>Send Payment</Button>
+                <Button onClick={generateCalldata}>Send Payment</Button>
             </div>
         </>
     );

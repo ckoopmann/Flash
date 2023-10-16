@@ -17,7 +17,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Web3AuthContext } from "@/context/Web3AuthContext";
+import { useWeb3Auth } from "@/provider/Web3AuthProvider";
 
 const MAX_AMOUNT = 10;
 const formSchema = z.object({
@@ -33,7 +33,7 @@ const formSchema = z.object({
 
 export function ReceiveForm() {
     const router = useRouter();
-    const web3AuthContext = useContext(Web3AuthContext);
+    const web3AuthContext = useWeb3Auth();
     const [address, setAddress] = useState("");
 
     useEffect(() => {

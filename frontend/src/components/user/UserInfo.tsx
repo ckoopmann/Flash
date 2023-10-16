@@ -1,12 +1,12 @@
 "use client";
-import { useContext, useEffect, useState } from "react";
-import { Web3AuthContext } from "@/context/Web3AuthContext";
+import {  useEffect, useState } from "react";
+import { useWeb3Auth } from "@/provider/Web3AuthProvider";
 import { Label } from "@/components/ui/label"
 import { getGnosisSdk } from '@dethcrypto/eth-sdk-client'
 import { ethers } from "ethers";
 
 function UserInfo({className}: {className?: string}) {
-    const web3AuthContext = useContext(Web3AuthContext);
+    const web3AuthContext = useWeb3Auth();
     const [userAddress, setUserAddress] = useState("...");
     const [userBalance, setUserBalance] = useState("...");
     useEffect(() => {

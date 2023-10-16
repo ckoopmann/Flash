@@ -2,8 +2,8 @@
 import { ethers } from "ethers";
 import { generateVerificationCallData, generatePayCallData} from "../../utils";
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
-import { Web3AuthContext } from "@/context/Web3AuthContext";
+import { useEffect, useState } from "react";
+import { useWeb3Auth } from "@/provider/Web3AuthProvider";
 import { Button } from "@/components/ui/button";
 import { FaSpinner } from "react-icons/fa";
 import { getGnosisSdk } from "@dethcrypto/eth-sdk-client";
@@ -20,7 +20,7 @@ function GeneratePaymentCodeButton({
     paymentId: string;
 }) {
     const router = useRouter();
-    const web3AuthContext = useContext(Web3AuthContext);
+    const web3AuthContext = useWeb3Auth();
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | undefined>(undefined);
 

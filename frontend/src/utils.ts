@@ -1,7 +1,48 @@
 import { ethers } from "ethers";
 import { BigNumberish, Signer } from "ethers";
 import {  Usdc, Flash } from '@dethcrypto/eth-sdk-client/types'
+import { GelatoRelay, CallWithSyncFeeRequest } from "@gelatonetwork/relay-sdk";
 
+
+export async function createTask(
+    data: string,
+    target: string,
+    chainId: number,
+    feeToken: string
+) {
+    const relay = new GelatoRelay();
+    const request: CallWithSyncFeeRequest = {
+        chainId,
+        target,
+        data,
+        feeToken,
+        isRelayContext: true,
+    };
+    const { taskId } = await relay.callWithSyncFee(request);
+    return taskId;
+}
+
+export async function awaitTask(taskId: string) {
+    const relay = new GelatoRelay();
+    const taskFulfilledPromise = new Promise((resolve, reject) => {
+        const maxRetry = 100;
+        let retryNum = 0;
+        const interval = setInterval(async () => {
+            retryNum++;
+            if (retryNum > maxRetry) {
+                clearInterval(interval);
+                reject("Max retry reached");
+            }
+            const taskStatus = await relay.getTaskStatus(taskId);
+            console.log("Task Status", taskStatus);
+            if (taskStatus?.taskState == "ExecSuccess") {
+                clearInterval(interval);
+                resolve(taskStatus);
+            }
+        }, 500);
+    });
+    return await taskFulfilledPromise;
+}
 
 
 export async function getTokenPermitSignature(

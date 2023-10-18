@@ -32,7 +32,7 @@ async function PaymentStatus({
     async function submitTransaction() {
         const usdcAddress = "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83";
         const chainId = 100;
-        const flashAddress = "0xF7ad28A6bbdef892712a470DbCAAeEd89f81d46D";
+        const flashAddress = "0xc67d1bFD13F28cAA8FE2Bb5D73fD228166aC8df0";
         const taskId = await createTask(
             calldata ??  "NOCALLDATA",
             flashAddress,

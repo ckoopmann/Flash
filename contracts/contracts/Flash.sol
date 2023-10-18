@@ -41,6 +41,13 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
         PermitData permitData;
     }
 
+    event Payment(
+        address indexed token,
+        address indexed from,
+        address indexed to,
+        uint256 amount
+    );
+
     constructor() EIP712("Flash", "1") {}
 
     function pay(
@@ -72,6 +79,13 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
             IERC20(_paymentData.token),
             _paymentData.to,
             IERC20(_paymentData.token).balanceOf(address(this))
+        );
+
+        emit Payment(
+            _paymentData.token,
+            _paymentData.from,
+            _paymentData.to,
+            _paymentData.amount
         );
 
     }

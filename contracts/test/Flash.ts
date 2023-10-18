@@ -28,7 +28,7 @@ describe("Flash", function () {
     let flash: Flash;
     const usdcAddress = "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83";
     const usdcWhale = "0xba12222222228d8ba445958a75a0704d566bf2c8";
-    const flashAddress = "0xF7ad28A6bbdef892712a470DbCAAeEd89f81d46D";
+    const flashAddress = "0xc67d1bFD13F28cAA8FE2Bb5D73fD228166aC8df0";
     let usdc: IERC20Complete;
     let signer: Signer;
     let receiver: Signer;

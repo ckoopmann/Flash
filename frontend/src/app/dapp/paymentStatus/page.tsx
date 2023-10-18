@@ -34,7 +34,7 @@ async function PaymentStatus({
         const chainId = 100;
         const flashAddress = "0xF7ad28A6bbdef892712a470DbCAAeEd89f81d46D";
         const taskId = await createTask(
-            calldata,
+            calldata ??  "NOCALLDATA",
             flashAddress,
             chainId,
             usdcAddress

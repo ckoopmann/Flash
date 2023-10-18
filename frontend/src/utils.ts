@@ -101,6 +101,7 @@ export async function getTokenPermitSignature(
         deadline,
     };
 
+    //@ts-ignore
     const typedSignature = await token.signer._signTypedData(
         permitDomain,
         permitTypes,
@@ -154,6 +155,7 @@ export async function generatePaySignature(
         permitNonce,
     };
 
+    //@ts-ignore
     const typedSignature = await flash.signer._signTypedData(
         payDomain,
         payTypes,

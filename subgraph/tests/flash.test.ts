@@ -6,7 +6,7 @@ import {
   beforeAll,
   afterAll
 } from "matchstick-as/assembly/index"
-import { Address } from "@graphprotocol/graph-ts"
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import { EIP712DomainChanged } from "../generated/schema"
 import { EIP712DomainChanged as EIP712DomainChangedEvent } from "../generated/Flash/Flash"
 import { handleEIP712DomainChanged } from "../src/flash"

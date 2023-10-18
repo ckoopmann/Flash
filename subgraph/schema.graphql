@@ -23,6 +23,17 @@ type Paused @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type Payment @entity(immutable: true) {
+  id: Bytes!
+  token: Bytes! # address
+  from: Bytes! # address
+  to: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 type Unpaused @entity(immutable: true) {
   id: Bytes!
   account: Bytes! # address

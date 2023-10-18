@@ -1,9 +1,10 @@
 import { newMockEvent } from "matchstick-as"
-import { ethereum, Address } from "@graphprotocol/graph-ts"
+import { ethereum, Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   EIP712DomainChanged,
   OwnershipTransferred,
   Paused,
+  Payment,
   Unpaused
 } from "../generated/Flash/Flash"
 
@@ -48,6 +49,32 @@ export function createPausedEvent(account: Address): Paused {
   )
 
   return pausedEvent
+}
+
+export function createPaymentEvent(
+  token: Address,
+  from: Address,
+  to: Address,
+  amount: BigInt
+): Payment {
+  let paymentEvent = changetype<Payment>(newMockEvent())
+
+  paymentEvent.parameters = new Array()
+
+  paymentEvent.parameters.push(
+    new ethereum.EventParam("token", ethereum.Value.fromAddress(token))
+  )
+  paymentEvent.parameters.push(
+    new ethereum.EventParam("from", ethereum.Value.fromAddress(from))
+  )
+  paymentEvent.parameters.push(
+    new ethereum.EventParam("to", ethereum.Value.fromAddress(to))
+  )
+  paymentEvent.parameters.push(
+    new ethereum.EventParam("amount", ethereum.Value.fromUnsignedBigInt(amount))
+  )
+
+  return paymentEvent
 }
 
 export function createUnpausedEvent(account: Address): Unpaused {

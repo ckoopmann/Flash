@@ -2,12 +2,14 @@ import {
   EIP712DomainChanged as EIP712DomainChangedEvent,
   OwnershipTransferred as OwnershipTransferredEvent,
   Paused as PausedEvent,
+  Payment as PaymentEvent,
   Unpaused as UnpausedEvent
 } from "../generated/Flash/Flash"
 import {
   EIP712DomainChanged,
   OwnershipTransferred,
   Paused,
+  Payment,
   Unpaused
 } from "../generated/schema"
 
@@ -46,6 +48,22 @@ export function handlePaused(event: PausedEvent): void {
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.account = event.params.account
+
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
+
+  entity.save()
+}
+
+export function handlePayment(event: PaymentEvent): void {
+  let entity = new Payment(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+  entity.token = event.params.token
+  entity.from = event.params.from
+  entity.to = event.params.to
+  entity.amount = event.params.amount
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp

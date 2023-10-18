@@ -6,9 +6,9 @@ dataSources:
     name: Flash
     network: gnosis
     source:
-      address: "0xF7ad28A6bbdef892712a470DbCAAeEd89f81d46D"
+      address: "0xc67d1bFD13F28cAA8FE2Bb5D73fD228166aC8df0"
       abi: Flash
-      startBlock: 30432432
+      startBlock: 30517373
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -17,6 +17,7 @@ dataSources:
         - EIP712DomainChanged
         - OwnershipTransferred
         - Paused
+        - Payment
         - Unpaused
       abis:
         - name: Flash
@@ -28,6 +29,8 @@ dataSources:
           handler: handleOwnershipTransferred
         - event: Paused(address)
           handler: handlePaused
+        - event: Payment(indexed address,indexed address,indexed address,uint256)
+          handler: handlePayment
         - event: Unpaused(address)
           handler: handleUnpaused
       file: ./src/flash.ts

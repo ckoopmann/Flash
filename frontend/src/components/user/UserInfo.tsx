@@ -91,20 +91,29 @@ function UserInfo({ className }: { className?: string }) {
     return (
         <>
             <div className={className}>
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label className="text-xl">Current Balance:</Label>
-                    <div className="text-3xl font-bold">{userBalance} $</div>
+                <div className="grid w-full max-w-sm items-center gap-1.5 mb-8">
+                    <Label className="text-2xl">Balance:</Label>
+                    <div className="text-2xl font-bold text-center">{parseFloat(userBalance).toFixed(2)} $</div>
                 </div>
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label className="text-xl">Transaction History:</Label>
-                    <ScrollArea className="rounded-md">
+                <div className="grid w-full max-w-sm items-center">
+                    <Label className="text-2xl">History:</Label>
+                    <ScrollArea>
                         <div className="p-4">
-                            {payments.map((payment) => (
+                            {payments.map((payment, i) => (
                                 <>
-                                    <div key={payment.id} className="text-s">
-                                        {dateFormat(payment.timestamp, "dd.mm")} {payment.direction == "received" ? "+" : "-"}{" "} {payment.amount} $
-                                    </div>
-                                    <Separator className="my-2" />
+                                    {i > 0 && <Separator className="my-2"/>}
+                                    <a
+                                        key={payment.id}
+                                        className={
+                                            payment.direction == "received"
+                                                ? "text-green-500"
+                                                : "text-red-500"
+                                        }
+                                        href={`https://gnosisscan.io/tx/${payment.transactionHash}`}
+                                    >
+                                        <span className="text-left mr-8"> {dateFormat(payment.timestamp, "dd.mm")}{" "}</span>
+                                        <span className="float-right">{payment.direction == "received" ? " +" : " -"}{payment.amount} $</span>
+                                    </a>
                                 </>
                             ))}
                         </div>

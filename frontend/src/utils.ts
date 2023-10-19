@@ -1,8 +1,7 @@
 import { ethers } from "ethers";
 import { BigNumberish, Signer } from "ethers";
-import {  Usdc, Flash } from '@dethcrypto/eth-sdk-client/types'
+import { Usdc, Flash } from "@dethcrypto/eth-sdk-client/types";
 import { GelatoRelay, CallWithSyncFeeRequest } from "@gelatonetwork/relay-sdk";
-
 
 export async function createTask(
     data: string,
@@ -43,7 +42,6 @@ export async function awaitTask(taskId: string) {
     });
     return await taskFulfilledPromise;
 }
-
 
 export async function getTokenPermitSignature(
     token: Usdc,
@@ -277,3 +275,5 @@ export async function generatePayCallData(
     return payCallData;
 }
 
+export async function getTransactions(user: string) {
+}

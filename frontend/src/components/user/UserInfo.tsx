@@ -9,20 +9,18 @@ import {
     PaymentsSentDocument,
     execute,
 } from "../../../.graphclient";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+
+import dateFormat from "dateformat";
 
 type Payment = {
     direction: "sent" | "received";
     amount: string;
     transactionHash: string;
-    timestamp: number;
+    timestamp: Date;
+    id: string;
 };
 function UserInfo({ className }: { className?: string }) {
     const web3AuthContext = useWeb3Auth();
@@ -60,8 +58,11 @@ function UserInfo({ className }: { className?: string }) {
                 (payment: any) => ({
                     direction: "received",
                     amount: ethers.utils.formatUnits(payment.amount, 6),
-                    timestamp: parseInt(payment.blockTimestamp),
+                    timestamp: new Date(
+                        parseInt(payment.blockTimestamp) * 1000
+                    ),
                     transactionHash: payment.transactionHash,
+                    id: payment.id,
                 })
             );
             const paymentsSent = await execute(PaymentsSentDocument, {
@@ -72,8 +73,11 @@ function UserInfo({ className }: { className?: string }) {
                 paymentsSent.data.payments.map((payment: any) => ({
                     direction: "sent",
                     amount: ethers.utils.formatUnits(payment.amount, 6),
-                    timestamp: parseInt(payment.blockTimestamp),
+                    timestamp: new Date(
+                        parseInt(payment.blockTimestamp) * 1000
+                    ),
                     transactionHash: payment.transactionHash,
+                    id: payment.id,
                 }))
             );
             payments.sort((a: any, b: any) =>
@@ -93,24 +97,18 @@ function UserInfo({ className }: { className?: string }) {
                 </div>
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                     <Label className="text-xl">Transaction History:</Label>
-                    <Table>
-                        <TableBody>
+                    <ScrollArea className="rounded-md">
+                        <div className="p-4">
                             {payments.map((payment) => (
-                                <TableRow>
-                                    <TableCell>
-                                        {payment.timestamp
-                                            ? new Date(
-                                                  payment.timestamp * 1000
-                                              ).toLocaleString()
-                                            : ""}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        {payment.direction == "received" ? "+" : "-"} {payment.amount} $
-                                    </TableCell>
-                                </TableRow>
+                                <>
+                                    <div key={payment.id} className="text-s">
+                                        {dateFormat(payment.timestamp, "dd.mm")} {payment.direction == "received" ? "+" : "-"}{" "} {payment.amount} $
+                                    </div>
+                                    <Separator className="my-2" />
+                                </>
                             ))}
-                        </TableBody>
-                    </Table>
+                        </div>
+                    </ScrollArea>{" "}
                 </div>
             </div>
         </>

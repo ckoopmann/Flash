@@ -1,5 +1,6 @@
 "use client";
 
+import { ethers } from "ethers";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -7,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useContext, useEffect, useState } from "react";
 
+import { getGnosisSdk } from "@dethcrypto/eth-sdk-client";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -20,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { useWeb3Auth } from "@/provider/Web3AuthProvider";
 
 const MAX_AMOUNT = 10;
+const AMOUNT_PRECISION = 6;
 const formSchema = z.object({
     amount: z.coerce
         .number()
@@ -61,13 +64,20 @@ export function ReceiveForm() {
     });
 
     // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>, e: any) {
+    async function onSubmit(values: z.infer<typeof formSchema>, e: any) {
         e.preventDefault();
         // Do something with the form values.
         // ✅ This will be type-safe and validated.
         console.log(values);
-        const { amount } = values;
-        const url = `/dapp/receiveCode?address=${address}&amount=${amount}`;
+        const { amount: amountUSD } = values;
+        const signer = web3AuthContext?.ethersSigner;
+        if(!signer) {
+            console.error("Getting user signer failed");
+            return;
+        }
+        const sdk = getGnosisSdk(signer);
+        const amount = await sdk.sdai.previewWithdraw(ethers.utils.parseEther(amountUSD.toString()));
+        const url = `/dapp/receiveCode?address=${address}&amountUSD=${amountUSD}&amount=${parseFloat(ethers.utils.formatEther(amount)).toFixed(AMOUNT_PRECISION)}`;
         console.log(url);
         router.push(url);
     }

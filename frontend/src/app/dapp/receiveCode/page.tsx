@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 function ReceiveCode({ searchParams }: { searchParams: any }) {
     const paymentId = uuidv4();
     console.log("searchParams", searchParams);
-    const amount = searchParams.amount;
+    const amountUSD = searchParams.amountUSD;
     const addressAndAmount = new URLSearchParams({
         paymentId,
         ...searchParams,
@@ -25,7 +25,7 @@ function ReceiveCode({ searchParams }: { searchParams: any }) {
             <Card>
                 <CardHeader>
                     <CardTitle>Receiving Payment</CardTitle>
-                    <CardDescription>Scan Code to pay {amount} $</CardDescription>
+                    <CardDescription>Scan Code to pay {amountUSD} $</CardDescription>
                 </CardHeader>
 
                 <CardContent className="flex flex-col items-center justify-between">

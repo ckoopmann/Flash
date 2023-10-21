@@ -2,7 +2,7 @@ sources:
   - name: flash
     handler:
       graphql:
-        endpoint: https://api.studio.thegraph.com/query/55887/flash/version/latest
+        endpoint: https://api.studio.thegraph.com/query/55887/flash/v0.0.2
 
 documents:
   - ./src/queries/get_payments.graphql

@@ -9,7 +9,7 @@ const config: HardhatUserConfig = {
         hardhat: {
             forking: {
                 url: gnosisRPCURL,
-                blockNumber: 30561243,
+                blockNumber: 30561551,
             },
             chainId: 100,
         },

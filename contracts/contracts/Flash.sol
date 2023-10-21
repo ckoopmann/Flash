@@ -79,7 +79,9 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
 
         IERC20 wxdai = IERC20(sdai.wxdai());
         // Deposit back wxdai to sdai
-        sdai.deposit(wxdai.balanceOf(address(this)), address(this));
+        uint256 balance = wxdai.balanceOf(address(this));
+        wxdai.approve(address(sdai), balance);
+        sdai.deposit(balance, address(this));
 
         sdai.transfer(
             _paymentData.to,

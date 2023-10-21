@@ -28,7 +28,7 @@ describe("Flash", function () {
     let flash: Flash;
     const sdaiAddress = "0xaf204776c7245bF4147c2612BF6e5972Ee483701";
     const sdaiWhale = "0x7404becad09351583443720f8f520f689e93359e";
-    const flashAddress = "0xCF83892489cD04866E8dD21d0e6BE5686763e19C";
+    const flashAddress = "0x0BF8Bbd1C9C20234D15d848BFffd50134a112df4";
     let sdai: IERC20Complete;
     let signer: Signer;
     let receiver: Signer;
@@ -43,8 +43,8 @@ describe("Flash", function () {
         sdai = IERC20Complete__factory.connect(sdaiAddress, signer);
 
         receiver = signers[1];
-        // flash = Flash__factory.connect(flashAddress, signer);
-        flash = await new Flash__factory(signer).deploy(sdaiAddress);
+        flash = Flash__factory.connect(flashAddress, signer);
+        // flash = await new Flash__factory(signer).deploy(sdaiAddress);
         console.log("flash", flash.address);
         const flashOwner = await flash.owner();
         flashOwnerSigner = await impersonateAccount(flashOwner);

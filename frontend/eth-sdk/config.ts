@@ -3,8 +3,8 @@ import { defineConfig } from "@dethcrypto/eth-sdk";
 export default defineConfig({
     contracts: {
         gnosis: {
-            usdc: "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83",
-            flash: "0xc67d1bFD13F28cAA8FE2Bb5D73fD228166aC8df0",
+            sdai: "0xaf204776c7245bF4147c2612BF6e5972Ee483701",
+            flash: "0x0BF8Bbd1C9C20234D15d848BFffd50134a112df4",
         },
     },
     etherscanURLs: {

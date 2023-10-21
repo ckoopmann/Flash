@@ -43,7 +43,8 @@ describe("Flash", function () {
         sdai = IERC20Complete__factory.connect(sdaiAddress, signer);
 
         receiver = signers[1];
-        flash = Flash__factory.connect(flashAddress, signer);
+        // flash = Flash__factory.connect(flashAddress, signer);
+        flash = await new Flash__factory(signer).deploy(sdaiAddress);
         console.log("flash", flash.address);
         const flashOwner = await flash.owner();
         flashOwnerSigner = await impersonateAccount(flashOwner);

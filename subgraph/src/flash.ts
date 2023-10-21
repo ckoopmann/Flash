@@ -1,5 +1,9 @@
 import {
+    SDai,
+} from "../generated/SDai/SDai"
+import {
   EIP712DomainChanged as EIP712DomainChangedEvent,
+  Flash,
   OwnershipTransferred as OwnershipTransferredEvent,
   Paused as PausedEvent,
   Payment as PaymentEvent,
@@ -67,6 +71,11 @@ export function handlePayment(event: PaymentEvent): void {
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
+
+  let flash = Flash.bind(event.address)
+  let sdaiAddress = flash.sdai()
+  let sdai  = SDai.bind(sdaiAddress)
+  entity.amountUSD = sdai.previewRedeem(event.params.amount)
 
   entity.save()
 }

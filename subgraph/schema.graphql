@@ -28,6 +28,7 @@ type Payment @entity(immutable: true) {
   from: Bytes! # address
   to: Bytes! # address
   amount: BigInt! # uint256
+  amountUSD: BigInt! # uint256
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

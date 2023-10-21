@@ -1,6 +1,7 @@
 query PaymentsReceived($user: Bytes!) {
   payments(where: { to: $user }) {
     amount
+    amountUSD
     blockNumber
     blockTimestamp
     from
@@ -13,6 +14,7 @@ query PaymentsReceived($user: Bytes!) {
 query PaymentsSent($user: Bytes!) {
   payments(where: { from: $user }) {
     amount
+    amountUSD
     blockNumber
     blockTimestamp
     from

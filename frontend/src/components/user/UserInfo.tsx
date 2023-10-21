@@ -72,7 +72,7 @@ function UserInfo({ className }: { className?: string }) {
             payments = payments.concat(
                 paymentsSent.data.payments.map((payment: any) => ({
                     direction: "sent",
-                    amount: ethers.utils.formatUnits(payment.amount, 18),
+                    amount: ethers.utils.formatUnits(payment.amountUSD, 18),
                     timestamp: new Date(
                         parseInt(payment.blockTimestamp) * 1000
                     ),

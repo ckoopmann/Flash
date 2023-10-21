@@ -154,7 +154,6 @@ export async function generatePaymentStructs(
     };
 
     const paymentData = {
-        token: token.address,
         from: await flash.signer.getAddress(),
         to: receiverAddress,
         amount,
@@ -210,11 +209,6 @@ export async function generatePayCallData(
         "verifyData",
         verifyCallData
     );
-
-    console.log("paymentData", paymentData);
-    if (paymentData.token !== tokenAddress) {
-        throw new Error("token address mismatch");
-    }
 
     if (!paymentData.amount.eq(amount)) {
         throw new Error("amount mismatch");

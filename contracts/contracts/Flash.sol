@@ -5,11 +5,9 @@ import {
     GelatoRelayContext
 } from "@gelatonetwork/relay-context/contracts/GelatoRelayContext.sol";
 
+import {ISDai} from "./interfaces/ISDai.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
-import {
-    SafeERC20
-} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -18,7 +16,6 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 
 contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
 
-    using SafeERC20 for IERC20;
 
     bytes32 public constant PAY_TYPEHASH =
         keccak256("Pay(address receiver,uint256 permitNonce)");
@@ -34,7 +31,6 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
     }
 
     struct PaymentData {
-        address token;
         address from;
         address to;
         uint256 amount;
@@ -42,22 +38,24 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
     }
 
     event Payment(
-        address indexed token,
         address indexed from,
         address indexed to,
         uint256 amount
     );
 
-    constructor() EIP712("Flash", "1") {}
+    ISDai public immutable sdai;
+
+    constructor(ISDai _sdai) EIP712("Flash", "1") {
+        sdai = _sdai;
+    }
 
     function pay(
         PaymentData calldata _paymentData,
         Signature calldata _signature
     ) external whenNotPaused onlyGelatoRelay {
-
         require(_verifySignature(_paymentData, _signature), "Flash: invalid signature");
 
-        IERC20Permit(_paymentData.token).permit(
+        sdai.permit(
             _paymentData.from,
             address(this),
             _paymentData.amount,
@@ -67,22 +65,28 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
             _paymentData.permitData.signature.s
         );
 
-        IERC20(_paymentData.token).safeTransferFrom(
+        sdai.transferFrom(
             _paymentData.from,
             address(this),
             _paymentData.amount
         );
 
+        // Redeem all sdai for wxdai
+        sdai.redeem(_paymentData.amount, address(this), address(this));
+
+        // Pay fees in wxdai
         _transferRelayFee();
 
-        SafeERC20.safeTransfer(
-            IERC20(_paymentData.token),
+        IERC20 wxdai = IERC20(sdai.wxdai());
+        // Deposit back wxdai to sdai
+        sdai.deposit(wxdai.balanceOf(address(this)), address(this));
+
+        sdai.transfer(
             _paymentData.to,
-            IERC20(_paymentData.token).balanceOf(address(this))
+            sdai.balanceOf(address(this))
         );
 
         emit Payment(
-            _paymentData.token,
             _paymentData.from,
             _paymentData.to,
             _paymentData.amount
@@ -120,7 +124,7 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
 
         require(_verifySignature(_paymentData, _signature), "Flash: invalid signature");
 
-        IERC20Permit(_paymentData.token).permit(
+        sdai.permit(
             _paymentData.from,
             address(this),
             _paymentData.amount,
@@ -130,16 +134,15 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
             _paymentData.permitData.signature.s
         );
 
-        IERC20(_paymentData.token).safeTransferFrom(
+        sdai.transferFrom(
             _paymentData.from,
             address(this),
             _paymentData.amount
         );
 
-        SafeERC20.safeTransfer(
-            IERC20(_paymentData.token),
+        sdai.transfer(
             _paymentData.to,
-            IERC20(_paymentData.token).balanceOf(address(this))
+            sdai.balanceOf(address(this))
         );
 
         revert("Flash: verification complete");
@@ -173,7 +176,7 @@ contract Flash is GelatoRelayContext, EIP712, Ownable, Pausable {
         PaymentData calldata _paymentData,
         Signature calldata _signature
     ) internal view  returns(bool) {
-        uint256 userNonce = IERC20Permit(_paymentData.token).nonces(_paymentData.from);
+        uint256 userNonce = sdai.nonces(_paymentData.from);
 
         bytes32 paymentStructHash = keccak256(abi.encode(
             PAY_TYPEHASH,

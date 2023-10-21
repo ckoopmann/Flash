@@ -60,14 +60,15 @@ async function main() {
     };
     console.log("chainId:", chainId);
 
-    let amount = ethers.utils.parseUnits("0.001", 6);
+    let amount = ethers.utils.parseUnits("0.01", 18);
     let receiver = "0x31B50d926f9d01A476a7225F5b807f7807B39B0A";
-    const usdcAddress = "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83";
-    const usdc = IERC20Complete__factory.connect(usdcAddress, deployerSigner);
+    const sdaiAddress = "0xaf204776c7245bF4147c2612BF6e5972Ee483701";
+    const wxdaiAddress =  "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d";
+    const sdai = IERC20Complete__factory.connect(sdaiAddress, deployerSigner);
     const relativeDeadline = 60 * 60;
     const deadline = Math.floor(new Date().getTime() / 1000) + relativeDeadline;
     let verifyCalldata = await generateVerificationCallData(
-        usdc,
+        sdai,
         amount,
         deadline,
         receiver,
@@ -76,7 +77,7 @@ async function main() {
 
     let payCalldata = await generatePayCallData(
         verifyCalldata,
-        usdcAddress,
+        sdaiAddress,
         amount,
         receiver,
         flash
@@ -85,7 +86,7 @@ async function main() {
         payCalldata,
         flash.address,
         chainId,
-        usdcAddress
+        wxdaiAddress
     );
     await awaitTask(task);
 }

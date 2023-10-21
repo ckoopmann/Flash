@@ -7,6 +7,7 @@ const func: DeployFunction = async function () {
         return;
     }
     const { deploy } = deployments;
+    const sdaiAddress = "0xaf204776c7245bF4147c2612BF6e5972Ee483701";
 
     let { deployer } = await getNamedAccounts();
     console.log("deployer:", deployer);
@@ -14,7 +15,7 @@ const func: DeployFunction = async function () {
     console.log("\nDeploying Flash...");
     const flash = await deploy("Flash", {
         from: deployer,
-        args: [],
+        args: [sdaiAddress],
     });
     console.log("Flash deployed to:", flash.address);
 };

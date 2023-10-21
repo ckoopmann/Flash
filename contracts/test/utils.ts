@@ -214,7 +214,7 @@ export async function generatePayCallData(
         throw new Error("amount mismatch");
     }
 
-    if (paymentData.to !== receiver) {
+    if (ethers.utils.getAddress(paymentData.to) !== ethers.utils.getAddress(receiver)) {
         throw new Error("receiver mismatch");
     }
 

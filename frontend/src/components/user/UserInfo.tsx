@@ -43,7 +43,8 @@ function UserInfo({ className }: { className?: string }) {
             setUserAddress(address);
 
             const sdk = getGnosisSdk(signer);
-            const balance = await sdk.sdai.balanceOf(address);
+            // Calculate usd value of sdai tokens using previewRedeem (assumes 1:1 peg of wxdai)
+            const balance = await sdk.sdai.previewRedeem(await sdk.sdai.balanceOf(address));
             if (!balance) {
                 console.error("Getting user balance failed");
                 return;
@@ -57,7 +58,7 @@ function UserInfo({ className }: { className?: string }) {
             let payments = paymentsReceived.data.payments.map(
                 (payment: any) => ({
                     direction: "received",
-                    amount: ethers.utils.formatUnits(payment.amount, 18),
+                    amount: parseFloat(ethers.utils.formatUnits(payment.amountUSD, 18)).toFixed(2),
                     timestamp: new Date(
                         parseInt(payment.blockTimestamp) * 1000
                     ),
@@ -72,7 +73,7 @@ function UserInfo({ className }: { className?: string }) {
             payments = payments.concat(
                 paymentsSent.data.payments.map((payment: any) => ({
                     direction: "sent",
-                    amount: ethers.utils.formatUnits(payment.amountUSD, 18),
+                    amount: parseFloat(ethers.utils.formatUnits(payment.amountUSD, 18)).toFixed(2),
                     timestamp: new Date(
                         parseInt(payment.blockTimestamp) * 1000
                     ),

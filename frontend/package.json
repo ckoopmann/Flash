@@ -39,6 +39,7 @@
     "eslint": "8.41.0",
     "eslint-config-next": "13.4.4",
     "ethers": "^5.7.2",
+    "ethereumjs-util": "^7.1.5",
     "graphql": "^16.8.1",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.241.0",

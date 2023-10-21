@@ -61,7 +61,7 @@ async function main() {
     console.log("chainId:", chainId);
 
     let amount = ethers.utils.parseUnits("0.01", 18);
-    let receiver = "0x31B50d926f9d01A476a7225F5b807f7807B39B0A";
+    let receiver = "0x806C17df35c5678A10EbF844D66c2BbFa973200B";
     const sdaiAddress = "0xaf204776c7245bF4147c2612BF6e5972Ee483701";
     const wxdaiAddress =  "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d";
     const sdai = IERC20Complete__factory.connect(sdaiAddress, deployerSigner);

@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { BigNumberish, Signer } from "ethers";
-import { Usdc, Flash } from "@dethcrypto/eth-sdk-client/types";
+import { Sdai, Flash } from "@dethcrypto/eth-sdk-client/types";
 import { GelatoRelay, CallWithSyncFeeRequest } from "@gelatonetwork/relay-sdk";
 
 export async function createTask(
@@ -44,7 +44,7 @@ export async function awaitTask(taskId: string) {
 }
 
 export async function getTokenPermitSignature(
-    token: Usdc,
+    token: Sdai,
     spender: string,
     value: BigNumberish,
     deadline: BigNumberish
@@ -170,7 +170,7 @@ export async function generatePaySignature(
 }
 
 export async function generatePaymentStructs(
-    token: Usdc,
+    token: Sdai,
     amount: BigNumberish,
     deadline: BigNumberish,
     receiverAddress: string,
@@ -197,7 +197,6 @@ export async function generatePaymentStructs(
     };
 
     const paymentData = {
-        token: token.address,
         from: await flash.signer.getAddress(),
         to: receiverAddress,
         amount,
@@ -210,7 +209,7 @@ export async function generatePaymentStructs(
 }
 
 export async function generateVerificationCallData(
-    token: Usdc,
+    token: Sdai,
     amount: BigNumberish,
     deadline: BigNumberish,
     receiverAddress: string,
@@ -255,9 +254,6 @@ export async function generatePayCallData(
     );
 
     console.log("paymentData", paymentData);
-    if (paymentData.token !== tokenAddress) {
-        throw new Error("token address mismatch");
-    }
 
     if (!paymentData.amount.eq(amount)) {
         throw new Error("amount mismatch");

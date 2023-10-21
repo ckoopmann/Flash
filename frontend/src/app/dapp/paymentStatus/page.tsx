@@ -30,14 +30,14 @@ async function PaymentStatus({
     const [taskId, error] = await submitTransaction();
 
     async function submitTransaction() {
-        const usdcAddress = "0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83";
+        const wxdaiAddress = "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d";
         const chainId = 100;
-        const flashAddress = "0xc67d1bFD13F28cAA8FE2Bb5D73fD228166aC8df0";
+        const flashAddress = "0x0BF8Bbd1C9C20234D15d848BFffd50134a112df4";
         const taskId = await createTask(
             calldata ??  "NOCALLDATA",
             flashAddress,
             chainId,
-            usdcAddress
+            wxdaiAddress
         );
         console.log("taskId:", taskId);
         const pusherConfig = {

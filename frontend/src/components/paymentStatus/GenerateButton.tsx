@@ -36,8 +36,8 @@ function GeneratePaymentCodeButton({
             }
             const sdk = getGnosisSdk(signer);
             const userAddress = await signer.getAddress();
-            const balance = await sdk.usdc.balanceOf(userAddress);
-            const value = ethers.utils.parseUnits(amount, 6);
+            const balance = await sdk.sdai.balanceOf(userAddress);
+            const value = ethers.utils.parseUnits(amount, 18);
             if (balance.lt(value)) {
                 console.warn("insufficient balance");
                 setError("Insufficient Balance");
@@ -49,7 +49,7 @@ function GeneratePaymentCodeButton({
 
     async function generateCalldata() {
         setProcessing(true);
-        const value = ethers.utils.parseUnits(amount, 6);
+        const value = ethers.utils.parseUnits(amount, 18);
         const signer = web3AuthContext?.ethersSigner;
         console.log("signer:", signer);
         if (!signer) {
@@ -61,7 +61,7 @@ function GeneratePaymentCodeButton({
 
         const deadline = Math.floor(Date.now() / 1000) + RELATIVE_DEADLINE;
         const verificationCalldata = await generateVerificationCallData(
-            sdk.usdc,
+            sdk.sdai,
             value,
             deadline,
             address,
@@ -70,7 +70,7 @@ function GeneratePaymentCodeButton({
         console.log("verificationCalldata:", verificationCalldata);
         try {
             const payCalldata = await generatePayCallData(verificationCalldata,
-                sdk.usdc.address,
+                sdk.sdai.address,
                 value,
                 address, 
                 sdk.flash

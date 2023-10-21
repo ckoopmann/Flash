@@ -43,13 +43,13 @@ function UserInfo({ className }: { className?: string }) {
             setUserAddress(address);
 
             const sdk = getGnosisSdk(signer);
-            const balance = await sdk.usdc.balanceOf(address);
+            const balance = await sdk.sdai.balanceOf(address);
             if (!balance) {
                 console.error("Getting user balance failed");
                 return;
             }
             console.log("User Balance: ", balance);
-            setUserBalance(ethers.utils.formatUnits(balance, 6));
+            setUserBalance(ethers.utils.formatUnits(balance, 18));
             const paymentsReceived = await execute(PaymentsReceivedDocument, {
                 user: address,
             });
@@ -57,7 +57,7 @@ function UserInfo({ className }: { className?: string }) {
             let payments = paymentsReceived.data.payments.map(
                 (payment: any) => ({
                     direction: "received",
-                    amount: ethers.utils.formatUnits(payment.amount, 6),
+                    amount: ethers.utils.formatUnits(payment.amount, 18),
                     timestamp: new Date(
                         parseInt(payment.blockTimestamp) * 1000
                     ),
@@ -72,7 +72,7 @@ function UserInfo({ className }: { className?: string }) {
             payments = payments.concat(
                 paymentsSent.data.payments.map((payment: any) => ({
                     direction: "sent",
-                    amount: ethers.utils.formatUnits(payment.amount, 6),
+                    amount: ethers.utils.formatUnits(payment.amount, 18),
                     timestamp: new Date(
                         parseInt(payment.blockTimestamp) * 1000
                     ),

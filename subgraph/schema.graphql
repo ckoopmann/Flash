@@ -25,7 +25,6 @@ type Paused @entity(immutable: true) {
 
 type Payment @entity(immutable: true) {
   id: Bytes!
-  token: Bytes! # address
   from: Bytes! # address
   to: Bytes! # address
   amount: BigInt! # uint256

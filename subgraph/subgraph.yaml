@@ -6,19 +6,31 @@ dataSources:
     name: Flash
     network: gnosis
     source:
-      address: "0xc67d1bFD13F28cAA8FE2Bb5D73fD228166aC8df0"
+      address: "0x0BF8Bbd1C9C20234D15d848BFffd50134a112df4"
       abi: Flash
-      startBlock: 30517373
+      startBlock: 30561551
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
+        - EIP712DomainChanged
+        - OwnershipTransferred
+        - Paused
         - Payment
+        - Unpaused
       abis:
         - name: Flash
           file: ./abis/Flash.json
       eventHandlers:
-        - event: Payment(indexed address,indexed address,indexed address,uint256)
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: Paused(address)
+          handler: handlePaused
+        - event: Payment(indexed address,indexed address,uint256)
           handler: handlePayment
+        - event: Unpaused(address)
+          handler: handleUnpaused
       file: ./src/flash.ts

@@ -52,7 +52,6 @@ export function createPausedEvent(account: Address): Paused {
 }
 
 export function createPaymentEvent(
-  token: Address,
   from: Address,
   to: Address,
   amount: BigInt
@@ -61,9 +60,6 @@ export function createPaymentEvent(
 
   paymentEvent.parameters = new Array()
 
-  paymentEvent.parameters.push(
-    new ethereum.EventParam("token", ethereum.Value.fromAddress(token))
-  )
   paymentEvent.parameters.push(
     new ethereum.EventParam("from", ethereum.Value.fromAddress(from))
   )

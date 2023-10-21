@@ -60,7 +60,6 @@ export function handlePayment(event: PaymentEvent): void {
   let entity = new Payment(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
-  entity.token = event.params.token
   entity.from = event.params.from
   entity.to = event.params.to
   entity.amount = event.params.amount

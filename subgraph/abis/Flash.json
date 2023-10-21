@@ -1,5 +1,11 @@
 [
-  { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
+  {
+    "inputs": [
+      { "internalType": "contract ISDai", "name": "_sdai", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
   { "inputs": [], "name": "InvalidShortString", "type": "error" },
   {
     "inputs": [{ "internalType": "string", "name": "str", "type": "string" }],
@@ -47,12 +53,6 @@
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
       {
         "indexed": true,
         "internalType": "address",
@@ -139,7 +139,6 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "address", "name": "token", "type": "address" },
           { "internalType": "address", "name": "from", "type": "address" },
           { "internalType": "address", "name": "to", "type": "address" },
           { "internalType": "uint256", "name": "amount", "type": "uint256" },
@@ -194,6 +193,15 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "sdai",
+    "outputs": [
+      { "internalType": "contract ISDai", "name": "", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       { "internalType": "address", "name": "_newOwner", "type": "address" }
     ],
@@ -222,7 +230,6 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "address", "name": "token", "type": "address" },
           { "internalType": "address", "name": "from", "type": "address" },
           { "internalType": "address", "name": "to", "type": "address" },
           { "internalType": "uint256", "name": "amount", "type": "uint256" },
@@ -273,7 +280,6 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "address", "name": "token", "type": "address" },
           { "internalType": "address", "name": "from", "type": "address" },
           { "internalType": "address", "name": "to", "type": "address" },
           { "internalType": "uint256", "name": "amount", "type": "uint256" },
@@ -324,7 +330,6 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "address", "name": "token", "type": "address" },
           { "internalType": "address", "name": "from", "type": "address" },
           { "internalType": "address", "name": "to", "type": "address" },
           { "internalType": "uint256", "name": "amount", "type": "uint256" },

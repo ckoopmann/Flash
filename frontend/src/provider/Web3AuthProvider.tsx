@@ -9,9 +9,6 @@ export interface Web3AuthContextType {
     ethersProvider: ethers.providers.Web3Provider | null;
     ethersSigner: ethers.Signer | null;
 }
-{
-    /* const provider = new ethers.providers.Web3Provider(this.provider); */
-}
 
 export const Web3AuthContext = createContext<Web3AuthContextType | null>(null);
 
